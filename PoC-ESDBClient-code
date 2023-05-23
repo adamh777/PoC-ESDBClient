@@ -41,7 +41,7 @@ def generate_html(events):
     return html
 
 
-# Unit testy
+# Unit tests
 def test_write_event():
     stream_name = "my_stream"
     event_type = "my_event"
