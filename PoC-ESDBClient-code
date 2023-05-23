@@ -1,0 +1,65 @@
+from esdbclient import ESDBClient
+from datetime import datetime, timedelta
+
+
+def write_event(stream_name, event_type, event_data):
+    client = ESDBClient("localhost", 2113)
+    client.connect()
+
+    event = {
+        "type": event_type,
+        "data": event_data,
+        "created_at": datetime.utcnow().isoformat()
+    }
+
+    client.append_to_stream(stream_name, [event])
+    client.disconnect()
+
+
+def read_events(stream_name, max_count):
+    client = ESDBClient("localhost", 2113)
+    client.connect()
+
+    from_time = datetime.utcnow() - timedelta(minutes=10)
+    events = client.read_stream_backward(stream_name, from_time, max_count)
+
+    client.disconnect()
+    return events
+
+
+def generate_html(events):
+    html = "<html><body><ul>"
+
+    for event in events:
+        event_type = event["type"]
+        event_id = event["event_id"]
+        # More event info append here
+
+        html += f"<li>Type: {event_type}, ID: {event_id}</li>"
+
+    html += "</ul></body></html>"
+    return html
+
+
+# Unit testy
+def test_write_event():
+    stream_name = "my_stream"
+    event_type = "my_event"
+    event_data = {"key": "value"}
+
+    write_event(stream_name, event_type, event_data)
+
+
+def test_read_events():
+    stream_name = "my_stream"
+    max_count = 10
+
+    events = read_events(stream_name, max_count)
+    html = generate_html(events)
+
+    print(html)
+
+
+if __name__ == "__main__":
+    test_write_event()
+    test_read_events()
